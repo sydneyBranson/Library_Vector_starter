@@ -54,34 +54,52 @@ void reloadAllData(){
  */
 int checkout(int bookid, int patronid){
 	reloadAllData();
-		int numbooks=howmanybooksdoesPatronHaveCheckedOut(patronid);
-			if(numbooks != PATRON_NOT_ENROLLED){
-				for(book b: books){
-					if(bookid==b.book_id){
-						if(numbooks >= MAX_BOOKS_ALLOWED_OUT){
-							std::cout<<numbooks;
-							std::cout<<MAX_BOOKS_ALLOWED_OUT;
-							return TOO_MANY_OUT;
-						}
-						else if(numbooks < MAX_BOOKS_ALLOWED_OUT) {
-							for( patron p: patrons){
-								if(patronid==p.patron_id){
-									p.number_books_checked_out++;
-								}
-							}
-							b.loaned_to_patron_id = patronid;
-							b.state = OUT;
-						}
-					} else {
-						return  BOOK_NOT_IN_COLLECTION;
-					}
-				}
-			}
-			else{
-	return PATRON_NOT_ENROLLED;
-		}
+	bool patronInVector=false;
+	bool hasTooManyBooks=false;
+	bool bookInVector=false;
 
+	for( patron p: patrons){
+	if(patronid==p.patron_id){
+	patronInVector=true;
+	}
+
+	if(p.number_books_checked_out>=MAX_BOOKS_ALLOWED_OUT){
+		hasTooManyBooks=true;
+	}
+	}
+	if(patronInVector==false){
+		return PATRON_NOT_ENROLLED;
+	}
+	if(hasTooManyBooks==true){
+		return TOO_MANY_OUT;
+	}
+
+	for( book b: books){
+		if(bookid==b.book_id){
+			bookInVector=true;
+			}
+	}
+
+	if(bookid> books.size()){
+		return BOOK_NOT_IN_COLLECTION;
+	}
+
+	if(books[bookid].state!=IN){
+		bookInVector=false;
+		}
+	if(bookInVector==false){
+		return BOOK_NOT_IN_COLLECTION;
+	}
+	books[bookid].state=OUT;
+	books[bookid].loaned_to_patron_id=patronid;
+	patrons[patronid].number_books_checked_out++;
+
+	saveBooks(books, BOOKFILE.c_str());
+	savePatrons(patrons, PATRONFILE.c_str());
 		return SUCCESS;
+
+
+
 	}
 
 
@@ -98,6 +116,8 @@ int checkout(int bookid, int patronid){
  * 		   BOOK_NOT_IN_COLLECTION
  */
 int checkin(int bookid){
+	reloadAllData();
+
 	loadBooks(books, BOOKFILE.c_str());
 		loadPatrons(patrons, PATRONFILE.c_str());
 		for(book b: books){
@@ -171,12 +191,17 @@ int numbPatrons(){
  *        or PATRON_NOT_ENROLLED         
  */
 int howmanybooksdoesPatronHaveCheckedOut(int patronid){
+	bool inVector = false;
 	for(patron p: patrons){
 			if (patronid==p.patron_id){
-				return p.number_books_checked_out;
+				inVector=true;
+				//return p.number_books_checked_out;
 			}
 		}
+	if(inVector==false){
 		return PATRON_NOT_ENROLLED;
+}
+	return patrons[patronid].number_books_checked_out;
 }
 
 /* search through patrons container to see if patronid is there
