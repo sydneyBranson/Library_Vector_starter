@@ -59,6 +59,8 @@ int checkout(int bookid, int patronid){
 				for(book b: books){
 					if(bookid==b.book_id){
 						if(numbooks >= MAX_BOOKS_ALLOWED_OUT){
+							std::cout<<numbooks;
+							std::cout<<MAX_BOOKS_ALLOWED_OUT;
 							return TOO_MANY_OUT;
 						}
 						else if(numbooks < MAX_BOOKS_ALLOWED_OUT) {

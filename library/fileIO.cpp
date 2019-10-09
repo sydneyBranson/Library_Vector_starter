@@ -109,6 +109,7 @@ int saveBooks(std::vector<book> &books, const char* filename)
 		return SUCCESS;
 }
 
+
 /* clears, then loads patrons from the file filename
  * returns  COULD_NOT_OPEN_FILE if cannot open filename
  * 			NO_PATRONS_IN_LIBRARY if there are 0 entries in patrons
@@ -116,14 +117,19 @@ int saveBooks(std::vector<book> &books, const char* filename)
  * */
 int loadPatrons(std::vector<patron> &patrons, const char* filename)
 {
+	patrons.clear();
+	//error is here with loading them
+	ifstream fileStream;
 	fileStream.open(filename);
-		patrons.clear();
+		//patrons.clear();
 
-		if (fileStream.is_open()) {
-
+	if (fileStream.is_open()==false) {
+		return COULD_NOT_OPEN_FILE;
+	}
+	if (fileStream.is_open()) {
 		   std::ifstream myfile(filename);
-
 		   std::string line;
+		   //check if empty
 
 		   while (!myfile.eof()) {
 			   patron temppat;
@@ -141,12 +147,18 @@ int loadPatrons(std::vector<patron> &patrons, const char* filename)
 			   temppat.number_books_checked_out=stoi(line,0);
 			   patrons.push_back(temppat);
 		   }
-		} else{
-		   return COULD_NOT_OPEN_FILE;
 		}
+		else{
+			return COULD_NOT_OPEN_FILE;
+		}
+
 		if (patrons.size() == 0) {
 			return NO_PATRONS_IN_LIBRARY;
 		}
+		if(fileStream.fail()){//for bogus file
+				return COULD_NOT_OPEN_FILE;
+			}
+
 		return SUCCESS;
 }
 
@@ -171,7 +183,8 @@ int savePatrons(std::vector<patron> &patrons, const char* filename)
 							<< p.name << ","
 							<< to_string(p.number_books_checked_out) << "\n";
 				}
-			} else{
+			}
+			else{
 				return COULD_NOT_OPEN_FILE;
 			}
 			return SUCCESS;
